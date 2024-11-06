@@ -22,9 +22,7 @@ model = load_model()
 def make_prediction(img): 
     img_processed = img_preprocess(img) ## (3,500,500) 
     prediction = model(img_processed.unsqueeze(0)) # (1,3,500,500)
-    prediction = prediction[0]  
-    
-    ## Dictionary with keys "boxes", "labels", "scores".
+    prediction = prediction[0]                       ## Dictionary with keys "boxes", "labels", "scores".
     # Filtere nur die "person" und "boat" Labels
     mask = (prediction["labels"] == 1) | (prediction["labels"] == 9)  # person == 1, boat == 9
     prediction["boxes"] = prediction["boxes"][mask]
@@ -39,12 +37,12 @@ def make_prediction(img):
 def create_image_with_bboxes(img, prediction): ## Adds Bounding Boxes around original Image.
     img_tensor = torch.tensor(img) ## Transpose
     img_with_bboxes = draw_bounding_boxes(img_tensor, boxes=prediction["boxes"], labels=prediction["labels"],
-                                          colors=["red" if label=="person" else "green" for label in prediction["labels"]] , width=2)
+                                          colors=["red" if label=="person" else "green" for label in prediction["labels"]] , width=5)
     img_with_bboxes_np = img_with_bboxes.detach().numpy().transpose(1,2,0) ### (3,W,H) -> (W,H,3), Channel first to channel last.
     return img_with_bboxes_np
 
 ## Dashboard
-st.title("Object Detector :tea: :coffee:")
+st.title("Suchdrohne Machbarkeitsanalyse")
 upload = st.file_uploader(label="Upload Image Here:", type=["png", "jpg", "jpeg"])
 
 if upload:
@@ -65,5 +63,3 @@ if upload:
     del prediction["boxes"]
     st.header("Predicted Probabilities")
     st.write(prediction)
-
-
