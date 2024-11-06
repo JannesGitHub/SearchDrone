@@ -22,8 +22,18 @@ model = load_model()
 def make_prediction(img): 
     img_processed = img_preprocess(img) ## (3,500,500) 
     prediction = model(img_processed.unsqueeze(0)) # (1,3,500,500)
-    prediction = prediction[0]                       ## Dictionary with keys "boxes", "labels", "scores".
+    prediction = prediction[0]  
+    
+    ## Dictionary with keys "boxes", "labels", "scores".
+    # Filtere nur die "person" und "boat" Labels
+    mask = (prediction["labels"] == 1) | (prediction["labels"] == 9)  # person == 1, boat == 9
+    prediction["boxes"] = prediction["boxes"][mask]
+    prediction["labels"] = prediction["labels"][mask]
+    prediction["scores"] = prediction["scores"][mask]
+    
+    # Übersetze Labels in ihre Namen
     prediction["labels"] = [categories[label] for label in prediction["labels"]]
+    
     return prediction
 
 def create_image_with_bboxes(img, prediction): ## Adds Bounding Boxes around original Image.
